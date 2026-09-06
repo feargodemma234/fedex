@@ -1232,7 +1232,6 @@ elif st.session_state.page == "Orders":
     st.subheader("📦 My Orders")
 
     try:
-
         result = (
             supabase
             .table("orders")
@@ -1261,7 +1260,7 @@ elif st.session_state.page == "Orders":
                 )
 
                 with st.expander(
-                    f"{order['order_id']} — "
+                    f"{order.get('order_id', 'Order')} — "
                     f"${order_total:,.2f}"
                 ):
 
@@ -1310,17 +1309,15 @@ elif st.session_state.page == "Orders":
                         f"{order.get('created_at', '')}"
                     )
 
-                    if order.get(
-                        "payment_proof_path"
-                    ):
+                    if order.get("payment_proof_path"):
 
                         st.write(
                             "📎 Payment proof uploaded"
                         )
 
-      except Exception as e:
+    except Exception as e:
 
-    st.error(
-        f"Could not load orders: {e}"
-    )
+        st.error(
+            f"Could not load orders: {e}"
+        )
         
