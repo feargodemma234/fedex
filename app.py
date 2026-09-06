@@ -3,113 +3,12 @@ import requests
 import uuid
 from datetime import datetime
 from supabase import create_client, Client
-from supabase.lib.client_options import ClientOptions
 
-
-# ============================================================
-# PAGE CONFIG
-# ============================================================
 
 st.set_page_config(
     page_title="NovaStore",
     page_icon="🛍️",
     layout="centered",
-    initial_sidebar_state="collapsed",
-)
-
-
-# ============================================================
-# DARK UI
-# ============================================================
-
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background: #0f172a;
-            color: #f8fafc;
-        }
-
-        .main .block-container {
-            max-width: 900px;
-            padding-top: 2rem;
-            padding-bottom: 4rem;
-        }
-
-        h1, h2, h3, h4, p, label {
-            color: #f8fafc !important;
-        }
-
-        .store-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 18px;
-        }
-
-        .product-name {
-            color: #f8fafc;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .product-description {
-            color: #cbd5e1;
-            font-size: 14px;
-        }
-
-        .price {
-            color: #38bdf8;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .success-box {
-            background: #123524;
-            border: 1px solid #22c55e;
-            border-radius: 12px;
-            padding: 16px;
-            color: #dcfce7;
-        }
-
-        .info-box {
-            background: #172554;
-            border: 1px solid #3b82f6;
-            border-radius: 12px;
-            padding: 16px;
-            color: #dbeafe;
-        }
-
-        div[data-testid="stTextInput"] input,
-        div[data-testid="stTextArea"] textarea {
-            background: #1e293b !important;
-            color: #f8fafc !important;
-            border: 1px solid #475569 !important;
-        }
-
-        div[data-testid="stSelectbox"] div {
-            color: #f8fafc !important;
-        }
-
-        .stButton > button {
-            border-radius: 10px;
-            font-weight: 700;
-        }
-
-        [data-testid="stFileUploader"] {
-            background: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 12px;
-            padding: 10px;
-        }
-
-        hr {
-            border-color: #334155;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
 )
 
 
@@ -120,32 +19,27 @@ st.markdown(
 try:
     SUPABASE_URL = st.secrets["SUPABASE_URL"]
     SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-    FORMSPREE_ENDPOINT = st.secrets.get("FORMSPREE_ENDPOINT", "")
+    FORMSPREE_ENDPOINT = st.secrets.get(
+        "FORMSPREE_ENDPOINT",
+        ""
+    )
+
 except Exception:
     st.error(
-        "Missing secrets. Add SUPABASE_URL, SUPABASE_KEY and "
-        "FORMSPREE_ENDPOINT to Streamlit secrets."
+        "Missing Supabase or Formspree secrets."
     )
     st.stop()
 
 
 @st.cache_resource
 def get_supabase() -> Client:
-    options = ClientOptions(
-        flow_type="pkce",
-        auto_refresh_token=True,
-        persist_session=True,
-    )
-
     return create_client(
         SUPABASE_URL,
         SUPABASE_KEY,
-        options=options,
     )
 
 
 supabase = get_supabase()
-
 
 # ============================================================
 # SESSION STATE
