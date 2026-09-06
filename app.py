@@ -1389,9 +1389,41 @@ elif st.session_state.page == "Checkout":
     )
 
     if st.button(
-        "✅ Confirm Order",
-        use_container_width=True
-    ):
+    "✅ Confirm Order",
+    use_container_width=True
+):
+    # ------------------------------
+    # 1. CREATE ORDER
+    # ------------------------------
+    order_id = f"CLOSE-{int(time.time())}" # or however you generate it
+    
+    # Save main order first
+    # save_order_to_db(order_id, customer_name, total) # your existing order save code
+    
+    # ------------------------------
+    # 2. SAVE EACH ITEM
+    # ------------------------------
+    order_items = [] # make sure this list exists above
+    
+    for item in st.session_state.cart: # or whatever your cart is called
+        order_items.append(
+            {
+                "order_id": order_id,
+                "product_id": str(item["id"]),
+                "product_name": item["name"],
+                "quantity": int(item["quantity"]),
+            }
+        )
+    
+    # Now save all items to DB
+    # save_order_items_to_db(order_items) # your existing function to insert to DB
+    
+    # ------------------------------
+    # 3. CLEAR CART + SUCCESS
+    # ------------------------------
+    st.session_state.cart = []
+    st.success(f"Order {order_id} placed successfully!")
+    st.rerun()
 
         # ----------------------------------------------------
         # VALIDATION
