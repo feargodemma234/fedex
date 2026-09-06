@@ -1578,42 +1578,29 @@ elif st.session_state.page == "Checkout":
 
         try:
 
-            order_row = {
+            
+           order_row = {
 
-                "id": order_id,
+    "order_id": order_id,
 
-                "user_id": str(
-                    st.session_state.user.id
-                ),
+    "user_id": str(
+        st.session_state.user.id
+    ),
 
-                "full_name": (
-                    full_name.strip()
-                ),
+    "full_name": full_name.strip(),
 
-                "phone": (
-                    phone.strip()
-                ),
+    "phone": phone.strip(),
 
-                "address": (
-                    address.strip()
-                ),
+    "address": address.strip(),
 
-                "payment_method": (
-                    payment_method
-                ),
+    "payment_method": payment_method,
 
-                "total": float(
-                    total
-                ),
+    "total": float(total),
 
-                "status": (
-                    order_status
-                ),
+    "status": order_status,
 
-                "payment_proof_path": (
-                    proof_name
-                )
-            }
+    "payment_proof_path": proof_name
+ }
 
 
             order_result = (
