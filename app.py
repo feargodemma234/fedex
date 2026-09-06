@@ -1026,4 +1026,629 @@ elif st.session_state.page == "Cart":
         ):
 
             st.session_state.page = "Checkout"
+            st.rerun()# =========================================================
+# CHECKOUT
+# =========================================================
+
+elif st.session_state.page == "Checkout":
+
+    st.title("📦 Checkout")
+
+    items = get_cart_items()
+
+
+    if not items:
+
+        st.warning(
+            "Your cart is empty."
+        )
+
+        if st.button(
+            "Go to Store",
+            use_container_width=True
+        ):
+
+            st.session_state.page = "Store"
             st.rerun()
+
+        st.stop()
+
+
+    # =====================================================
+    # ORDER SUMMARY
+    # =====================================================
+
+    st.subheader("Order Summary")
+
+
+    for item in items:
+
+        line_total = (
+            float(item["price"])
+            * int(item["quantity"])
+        )
+
+        st.write(
+            f"**{item['name']}** × "
+            f"{item['quantity']} — "
+            f"{money(line_total)}"
+        )
+
+
+    st.divider()
+
+
+    total = cart_total()
+
+
+    st.subheader(
+        f"Total: {money(total)}"
+    )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # CUSTOMER INFORMATION
+    # =====================================================
+
+    st.subheader(
+        "Customer Information"
+    )
+
+
+    full_name = st.text_input(
+        "Full Name"
+    )
+
+
+    customer_email = st.text_input(
+        "Email",
+        value=st.session_state.user.email
+    )
+
+
+    phone = st.text_input(
+        "Phone Number"
+    )
+
+
+    address = st.text_area(
+        "Delivery Address"
+    )
+
+
+    country = st.text_input(
+        "Country"
+    )
+
+
+    state = st.text_input(
+        "State"
+    )
+
+
+    # =====================================================
+    # PAYMENT
+    # =====================================================
+
+    st.subheader(
+        "Payment Method"
+    )
+
+
+    payment_method = st.selectbox(
+        "Choose payment method",
+        [
+            "Bank Transfer",
+            "Gift Card"
+        ]
+    )
+
+
+    if payment_method == "Bank Transfer":
+
+        st.info(
+            "After placing your order, you can send "
+            "your payment proof directly to the store email."
+        )
+
+
+    elif payment_method == "Gift Card":
+
+        st.info(
+            "After placing your order, send your "
+            "payment proof directly to the store email."
+        )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # CONFIRM ORDER
+    # =====================================================
+
+    if st.button(
+        "Confirm Order",
+        use_container_width=True,
+        type="primary"
+    ):
+
+
+        # -------------------------------------------------
+        # VALIDATION
+        # -------------------------------------------------
+
+        if not full_name.strip():
+
+            st.error(
+                "Please enter your full name."
+            )
+            st.stop()
+
+
+        if not customer_email.strip():
+
+            st.error(
+                "Please enter your email."
+            )
+            st.stop()
+
+
+        if not phone.strip():
+
+            st.error(
+                "Please enter your phone number."
+            )
+            st.stop()
+
+
+        if not address.strip():
+
+            st.error(
+                "Please enter your delivery address."
+            )
+            st.stop()
+
+
+        if not country.strip():
+
+            st.error(
+                "Please enter your country."
+            )
+            st.stop()
+
+
+        if not state.strip():
+
+            st.error(
+                "Please enter your state."
+            )
+            st.stop()
+
+
+        # -------------------------------------------------
+        # GENERATE IDS
+        # -------------------------------------------------
+
+        order_id = str(
+            uuid.uuid4()
+        )
+
+
+        order_code = (
+            "ORD-"
+            + uuid.uuid4().hex[:8].upper()
+        )
+
+
+        order_status = "Received"
+
+
+        # -------------------------------------------------
+        # ORDER DATABASE ROW
+        # -------------------------------------------------
+
+        order_row = {
+
+            "order_id": order_id,
+
+            "user_id": str(
+                st.session_state.user.id
+            ),
+
+            "full_name": full_name.strip(),
+
+            "phone": phone.strip(),
+
+            "address": address.strip(),
+
+            "payment_method": payment_method,
+
+            "total": float(total),
+
+            "status": order_status
+
+        }
+
+
+        # -------------------------------------------------
+        # SAVE ORDER
+        # -------------------------------------------------
+
+        try:
+
+            order_response = (
+                supabase
+                .table("orders")
+                .insert(order_row)
+                .execute()
+            )
+
+
+            if not order_response.data:
+
+                st.error(
+                    "Could not create order."
+                )
+
+                st.stop()
+
+
+        except Exception as e:
+
+            st.error(
+                f"Could not create order: {e}"
+            )
+
+            st.stop()
+
+
+        # -------------------------------------------------
+        # ORDER ITEMS
+        # -------------------------------------------------
+
+        order_items = []
+
+
+        for item in items:
+
+            order_items.append(
+                {
+
+                    "order_id": order_id,
+
+                    "product_id": str(
+                        item["id"]
+                    ),
+
+                    "product_name": item["name"],
+
+                    "quantity": int(
+                        item["quantity"]
+                    ),
+
+                    "unit_price": float(
+                        item["price"]
+                    )
+
+                }
+            )
+
+
+        try:
+
+            (
+                supabase
+                .table("order_items")
+                .insert(order_items)
+                .execute()
+            )
+
+
+        except Exception as e:
+
+            st.warning(
+                "The order was created, but the "
+                f"order items could not be saved: {e}"
+            )
+
+
+        # -------------------------------------------------
+        # SEND EMAIL TO STORE OWNER
+        # -------------------------------------------------
+
+        email_sent = False
+        email_error = None
+
+
+        if SMTP_EMAIL and SMTP_APP_PASSWORD:
+
+            email_sent, email_error = (
+                send_order_email(
+
+                    order_code,
+
+                    full_name,
+
+                    customer_email,
+
+                    phone,
+
+                    address,
+
+                    country,
+
+                    state,
+
+                    payment_method,
+
+                    total,
+
+                    items
+
+                )
+            )
+
+
+        # -------------------------------------------------
+        # SAVE LAST ORDER
+        # -------------------------------------------------
+
+        st.session_state.last_order = {
+
+            "order_id": order_id,
+
+            "order_code": order_code,
+
+            "full_name": full_name,
+
+            "email": customer_email,
+
+            "payment_method": payment_method,
+
+            "total": total,
+
+            "email_sent": email_sent,
+
+            "email_error": email_error
+
+        }
+
+
+        # -------------------------------------------------
+        # CLEAR CART
+        # -------------------------------------------------
+
+        st.session_state.cart = {}
+
+
+        st.session_state.page = (
+            "Confirmation"
+        )
+
+
+        st.rerun()
+
+
+# =========================================================
+# ORDER CONFIRMATION
+# =========================================================
+
+elif st.session_state.page == "Confirmation":
+
+    order = st.session_state.last_order
+
+
+    if not order:
+
+        st.warning(
+            "No recent order found."
+        )
+
+
+        if st.button(
+            "Back to Store",
+            use_container_width=True
+        ):
+
+            st.session_state.page = "Store"
+            st.rerun()
+
+
+        st.stop()
+
+
+    st.title(
+        "✅ Order Received"
+    )
+
+
+    # =====================================================
+    # ORDER SUCCESS BOX
+    # =====================================================
+
+    st.markdown(
+        f"""
+        <div class="success-box">
+
+        <h3>Thank you, {order['full_name']}!</h3>
+
+        <p>
+        Your order has been received successfully.
+        </p>
+
+        <p>
+        <strong>Order Number:</strong>
+        {order['order_code']}
+        </p>
+
+        <p>
+        <strong>Total:</strong>
+        {money(order['total'])}
+        </p>
+
+        <p>
+        <strong>Payment Method:</strong>
+        {order['payment_method']}
+        </p>
+
+        <p>
+        <strong>Status:</strong>
+        Payment Under Review
+        </p>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+    st.write("")
+
+
+    # =====================================================
+    # PAYMENT PROOF
+    # =====================================================
+
+    st.subheader(
+        "📧 Send Proof of Payment"
+    )
+
+
+    st.write(
+        "After making your payment, attach your "
+        "payment screenshot to an email and send "
+        "it directly to the store."
+    )
+
+
+    st.info(
+        f"Store email: {STORE_EMAIL}"
+    )
+
+
+    # =====================================================
+    # PREPARE EMAIL
+    # =====================================================
+
+    email_subject = quote(
+        f"Payment Proof - {order['order_code']}"
+    )
+
+
+    email_body = quote(
+        f"""Hello Quantum Store,
+
+I am sending the payment proof for my order.
+
+Order Number: {order['order_code']}
+
+Name: {order['full_name']}
+
+Email: {order['email']}
+
+Payment Method: {order['payment_method']}
+
+Order Total: {money(order['total'])}
+
+I have attached my payment proof.
+
+Thank you."""
+    )
+
+
+    mailto_link = (
+        f"mailto:{STORE_EMAIL}"
+        f"?subject={email_subject}"
+        f"&body={email_body}"
+    )
+
+
+    # =====================================================
+    # SEND PROOF BUTTON
+    # =====================================================
+
+    st.markdown(
+        f"""
+        <a href="{mailto_link}"
+           target="_blank"
+           style="
+               display:block;
+               text-align:center;
+               background:#2563eb;
+               color:white;
+               padding:15px;
+               border-radius:10px;
+               text-decoration:none;
+               font-weight:700;
+               font-size:17px;
+               margin-top:10px;
+           ">
+           📎 Send Proof of Payment
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+    st.write("")
+
+
+    st.caption(
+        "Tap the button, attach your payment screenshot "
+        "and send the email."
+    )
+
+
+    st.warning(
+        "Payment is not automatically verified. "
+        "The store must check the payment proof before "
+        "confirming the payment."
+    )
+
+
+    # =====================================================
+    # STORE EMAIL STATUS
+    # =====================================================
+
+    if order["email_sent"]:
+
+        st.success(
+            "Your order details were sent to the store."
+        )
+
+    else:
+
+        st.warning(
+            "The order was saved, but the automatic "
+            "store notification could not be sent."
+        )
+
+
+        if order["email_error"]:
+
+            st.caption(
+                f"Email error: {order['email_error']}"
+            )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # CONTINUE SHOPPING
+    # =====================================================
+
+    if st.button(
+        "🛍️ Continue Shopping",
+        use_container_width=True
+    ):
+
+        st.session_state.page = "Store"
+
+        st.session_state.last_order = None
+
+        st.rerun()
