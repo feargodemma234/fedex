@@ -396,6 +396,7 @@ elif st.session_state.page == "Checkout":
         st.warning("Your cart is empty.")
         st.stop()
 
+    # Calculate total
     total = sum(
         float(product_map[pid]["price"]) * quantity
         for pid, quantity in st.session_state.cart.items()
@@ -404,6 +405,7 @@ elif st.session_state.page == "Checkout":
 
     st.write(f"### Total: ${total:,.2f}")
 
+    # Checkout form
     with st.form("checkout_form"):
 
         full_name = st.text_input(
@@ -419,6 +421,11 @@ elif st.session_state.page == "Checkout":
         address = st.text_area(
             "Delivery Address",
             placeholder="Enter your full delivery address"
+        )
+
+        country = st.text_input(
+            "Country",
+            value="Nigeria"
         )
 
         state = st.text_input(
@@ -439,14 +446,17 @@ elif st.session_state.page == "Checkout":
             ]
         )
 
-        submitted = st.form_submit_button(
+        confirm_order = st.form_submit_button(
             "Confirm Order",
             use_container_width=True
         )
 
-    if submitted:
+    # -----------------------------
+    # PROCESS ORDER
+    # -----------------------------
+    if confirm_order:
 
-        # Remove accidental spaces
+        # Clean spaces
         full_name = full_name.strip()
         phone = phone.strip()
         address = address.strip()
@@ -454,7 +464,7 @@ elif st.session_state.page == "Checkout":
         state = state.strip()
         customer_email = customer_email.strip()
 
-        # Check required information
+        # Check required fields
         missing = []
 
         if not full_name:
@@ -488,29 +498,39 @@ elif st.session_state.page == "Checkout":
 
                 import uuid
 
+                # Generate order number
                 order_number = (
                     "ORD-" +
                     uuid.uuid4().hex[:8].upper()
                 )
 
-                # Create order
-                order = supabase.table("orders").insert({
-                    "user_id": st.session_state.user.id,
-                    "order_id": order_number,
-                    "full_name": full_name,
-                    "phone": phone,
-                    "address": address,
-                    "country": country,
-                    "state": state,
-                    "customer_email": customer_email,
-                    "total": total,
-                    "payment_method": payment_method,
-                    "status": "Received"
-                }).execute()
+                # -----------------------------
+                # CREATE ORDER
+                # -----------------------------
+                order = (
+                    supabase
+                    .table("orders")
+                    .insert({
+                        "user_id": st.session_state.user.id,
+                        "order_id": order_number,
+                        "full_name": full_name,
+                        "phone": phone,
+                        "address": address,
+                        "country": country,
+                        "state": state,
+                        "customer_email": customer_email,
+                        "total": total,
+                        "payment_method": payment_method,
+                        "status": "Received"
+                    })
+                    .execute()
+                )
 
                 order_db_id = order.data[0]["id"]
 
-                # Create order items
+                # -----------------------------
+                # CREATE ORDER ITEMS
+                # -----------------------------
                 items = []
 
                 for pid, quantity in st.session_state.cart.items():
@@ -528,27 +548,41 @@ elif st.session_state.page == "Checkout":
                         })
 
                 if items:
-                    supabase.table(
-                        "order_items"
-                    ).insert(items).execute()
 
-                # Formspree notification
+                    (
+                        supabase
+                        .table("order_items")
+                        .insert(items)
+                        .execute()
+                    )
+
+                # -----------------------------
+                # FORMSPREE NOTIFICATION
+                # -----------------------------
                 if FORMSPREE_ENDPOINT:
 
                     message = f"""
-New Order
+NEW ORDER
 
 Order ID: {order_number}
 
-Customer: {full_name}
-Email: {customer_email}
-Phone: {phone}
+Customer:
+{full_name}
 
-Address:
+Email:
+{customer_email}
+
+Phone:
+{phone}
+
+Delivery Address:
 {address}
 
-Country: {country}
-State: {state}
+Country:
+{country}
+
+State:
+{state}
 
 Payment Method:
 {payment_method}
@@ -565,23 +599,26 @@ Received
                         requests.post(
                             FORMSPREE_ENDPOINT,
                             data={
+                                "subject": f"New Order - {order_number}",
                                 "message": message,
                                 "email": customer_email
                             },
                             timeout=10
                         )
 
-                    except:
+                    except Exception:
                         pass
 
-                # Clear cart
+                # -----------------------------
+                # FINISH ORDER
+                # -----------------------------
+
                 st.session_state.cart = {}
 
-                # Save order information
                 st.session_state.order_number = order_number
+
                 st.session_state.order_total = total
 
-                # Go to success page
                 st.session_state.page = "Success"
 
                 st.rerun()
