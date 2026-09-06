@@ -1455,12 +1455,6 @@ elif st.session_state.page == "Checkout":
             uuid.uuid4()
         )
 
-        order_code = (
-            "ORD-"
-            + uuid.uuid4()
-            .hex[:8]
-            .upper()
-        )
 
         order_status = (
             "Payment Under Review"
