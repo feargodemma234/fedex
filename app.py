@@ -1318,8 +1318,9 @@ elif st.session_state.page == "Orders":
                             "📎 Payment proof uploaded"
                         )
 
-    except Exception as e:
+      except Exception as e:
 
-        st.error(
-            f"Could not load orders: {e}"
+    st.error(
+        f"Could not load orders: {e}"
+    )
         
