@@ -542,18 +542,16 @@ def send_order_email(
 
     items_text = ""
 
-    for item in cart_items:
+for item in cart_items:
+    line_total = float(item["price"]) * int(item["quantity"])
 
-        line_total = (
-            float(item["price"])
-            * int(item["quantity"])
-        )
-
-        items_text += (
-            f"- {item['name']} | "
-            f"Qty: {item['quantity']} | "
-            f"Price: {money(line_total)}\n"
-        )
+    items_text += (
+        f"Product Name: {item['name']}\n"
+        f"Quantity: {item['quantity']}\n"
+        f"Unit Price: {money(item['price'])}\n"
+        f"Product Total: {money(line_total)}\n"
+        f"{'-' * 40}\n"
+    )
 
 
     body = f"""
@@ -1129,42 +1127,82 @@ elif st.session_state.page == "Checkout":
     )
 
 
-    # =====================================================
-    # PAYMENT
-    # =====================================================
+    # =========================================================
+# PAYMENT METHOD
+# =========================================================
 
-    st.subheader(
-        "Payment Method"
+st.subheader("Payment Method")
+
+payment_method = st.selectbox(
+    "Choose payment method",
+    [
+        "Bank Transfer",
+        "Gift Card"
+    ]
+)
+
+
+if payment_method == "Bank Transfer":
+
+    st.markdown(
+        f"""
+        <div class="order-box">
+
+        <h3>🏦 Bank Transfer</h3>
+
+        <p>
+        <strong>Bank:</strong>
+        {PAYMENT_SETTINGS["bank_name"]}
+        </p>
+
+        <p>
+        <strong>Account Number:</strong>
+        {PAYMENT_SETTINGS["account_number"]}
+        </p>
+
+        <p>
+        <strong>Account Name:</strong>
+        {PAYMENT_SETTINGS["account_name"]}
+        </p>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.info(
+        "After making the transfer, place your order. "
+        "You will then be able to email your payment proof "
+        "directly to the store."
     )
 
 
-    payment_method = st.selectbox(
-        "Choose payment method",
-        [
-            "Bank Transfer",
-            "Gift Card"
-        ]
+elif payment_method == "Gift Card":
+
+    st.markdown(
+        f"""
+        <div class="order-box">
+
+        <h3>🎁 Gift Card Payment</h3>
+
+        <p>
+        {PAYMENT_SETTINGS["gift_card_instructions"]}
+        </p>
+
+        <p>
+        <strong>Send the photo to:</strong>
+        {STORE_EMAIL}
+        </p>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-
-    if payment_method == "Bank Transfer":
-
-        st.info(
-            "After placing your order, you can send "
-            "your payment proof directly to the store email."
-        )
-
-
-    elif payment_method == "Gift Card":
-
-        st.info(
-            "After placing your order, send your "
-            "payment proof directly to the store email."
-        )
-
-
-    st.divider()
-
+    st.warning(
+        "Make sure the photo clearly shows the required "
+        "gift-card information."
+    )
 
     # =====================================================
     # CONFIRM ORDER
