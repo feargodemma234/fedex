@@ -903,7 +903,7 @@ elif st.session_state.page == "Checkout":
     # PAYMENT
     # -----------------------------------------------------
 
-              st.markdown("### 📎 Payment Proof")
+        st.markdown("### 📎 Payment Proof")
 
         payment_proof = st.file_uploader(
             "📷 Take Photo / Choose File",
