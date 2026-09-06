@@ -1115,33 +1115,32 @@ checks the payment proof.
 
                 try:
                     response = requests.post(
-                        FORMSPREE_ENDPOINT,
-                        data={
-                            "subject": (
-                                f"New Order {order_code}"
-                            ),
-                            "order_id": order_code,
-                            "customer": full_name,
-                            "email": customer_email,
-                            "phone": phone,
-                            "address": address,
-                            "country": country,
-                            "state": state,
-                            "payment_method": (
-                                payment_method
-                            ),
-                            "total": money(total),
-                            "message": form_message,
-                        },
-                        files={
-                            "payment_proof": (
-                                proof_name,
-                                proof_bytes,
-                                proof_type,
-                            )
-                        },
-                        timeout=30,
-                    )
+    FORMSPREE_ENDPOINT,
+    data={
+        "subject": f"New Order {order_code}",
+        "order_id": order_code,
+        "customer": full_name,
+        "email": customer_email,
+        "phone": phone,
+        "address": address,
+        "country": country,
+        "state": state,
+        "payment_method": payment_method,
+        "total": money(total),
+        "message": form_message,
+    },
+    files={
+        "payment_proof": (
+            proof_name,
+            proof_bytes,
+            proof_type,
+        )
+    },
+    headers={
+        "Accept": "application/json"
+    },
+    timeout=30,
+)
 
                     if 200 <= response.status_code < 300:
                         formspree_success = True
