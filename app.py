@@ -903,27 +903,18 @@ elif st.session_state.page == "Checkout":
     # PAYMENT
     # -----------------------------------------------------
 
-      st.markdown(
-        "### 📎 Payment Proof"
-    )
+              st.markdown("### 📎 Payment Proof")
 
-    payment_proof = st.file_uploader(
-        "📷 Take Photo / Choose File",
-        type=[
-            "jpg",
-            "jpeg",
-            "png",
-            "webp"
-        ],
-        accept_multiple_files=False,
-        key="checkout_payment_proof"
-    )
-
-    if payment_proof:
-
-        st.success(
-            f"✅ File ready: "
-            f"{payment_proof.name}"
+        payment_proof = st.file_uploader(
+            "📷 Take Photo / Choose File",
+            type=[
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            ],
+            accept_multiple_files=False,
+            key="checkout_payment_proof"
         )
 
     # -----------------------------------------------------
