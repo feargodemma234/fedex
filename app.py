@@ -421,11 +421,6 @@ elif st.session_state.page == "Checkout":
             placeholder="Enter your full delivery address"
         )
 
-        country = st.text_input(
-            "Country",
-            value="Nigeria"
-        )
-
         state = st.text_input(
             "State",
             placeholder="Enter your state"
