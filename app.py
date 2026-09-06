@@ -1322,4 +1322,4 @@ elif st.session_state.page == "Orders":
 
         st.error(
             f"Could not load orders: {e}"
-        }
+        
