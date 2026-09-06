@@ -457,40 +457,295 @@ elif st.session_state.page == "Checkout":
         # -------------------------
         # PAYMENT PROOF
         # -------------------------
-        st.markdown("### 📷 Payment Proof")
+        st.markdown("### 📎 Payment Proof")
 
         if payment_method == "Bank Transfer":
 
             st.info(
-                "After making your bank transfer, upload a "
-                "clear screenshot or photo of your payment receipt."
+                "After making your bank transfer, take a photo "
+                "of your payment receipt or choose the receipt "
+                "from your device."
             )
 
-        elif payment_method == "Gift Card":
+        else:
 
             st.info(
-                "Upload a clear screenshot or photo showing "
-                "your gift card purchase/payment proof."
+                "Upload a photo of your gift-card payment proof. "
+                "You can take a new photo or choose one from "
+                "your device."
             )
 
         payment_proof = st.file_uploader(
-            "Add Photo of Payment Proof",
+            "📷 Take Photo / Choose File",
             type=[
                 "jpg",
                 "jpeg",
                 "png",
                 "webp"
             ],
-            help="Upload a JPG, JPEG, PNG, or WEBP image."
+            accept_multiple_files=False,
+            help=(
+                "You can take a photo with your phone camera "
+                "or select an existing image."
+            )
         )
 
         if payment_proof:
-
-            st.image(
-                payment_proof,
-                caption="Payment proof preview",
-                use_container_width=True
+            st.success(
+                f"✅ File ready: {payment_proof.name}"
             )
+
+        # -------------------------
+        # CONFIRM ORDER
+        # -------------------------
+        confirm_order = st.form_submit_button(
+            "Confirm Order",
+            use_container_width=True
+        )
+
+    # -----------------------------
+    # PROCESS ORDER
+    # -----------------------------
+    if confirm_order:
+
+        # Clean input
+        full_name = full_name.strip()
+        phone = phone.strip()
+        address = address.strip()
+        country = country.strip()
+        state = state.strip()
+        customer_email = customer_email.strip()
+
+        # -------------------------
+        # VALIDATION
+        # -------------------------
+        missing = []
+
+        if not full_name:
+            missing.append("Full Name")
+
+        if not phone:
+            missing.append("Phone Number")
+
+        if not address:
+            missing.append("Delivery Address")
+
+        if not country:
+            missing.append("Country")
+
+        if not state:
+            missing.append("State")
+
+        if not customer_email:
+            missing.append("Email")
+
+        if missing:
+
+            st.error(
+                "Please complete: " +
+                ", ".join(missing)
+            )
+
+        elif payment_proof is None:
+
+            st.error(
+                "Please upload your payment proof "
+                "before confirming your order."
+            )
+
+        else:
+
+            try:
+
+                import uuid
+
+                # -------------------------
+                # GENERATE ORDER ID
+                # -------------------------
+                order_number = (
+                    "ORD-" +
+                    uuid.uuid4().hex[:8].upper()
+                )
+
+                # -------------------------
+                # READ FILE
+                # -------------------------
+                file_bytes = payment_proof.getvalue()
+
+                file_extension = (
+                    payment_proof.name
+                    .split(".")[-1]
+                    .lower()
+                )
+
+                # Store each customer's proof
+                # inside their own folder
+                file_path = (
+                    f"{st.session_state.user.id}/"
+                    f"{order_number}."
+                    f"{file_extension}"
+                )
+
+                # -------------------------
+                # UPLOAD PAYMENT PROOF
+                # -------------------------
+                supabase.storage.from_(
+                    "payment-proofs"
+                ).upload(
+                    file_path,
+                    file_bytes,
+                    {
+                        "content-type": payment_proof.type,
+                        "upsert": "false"
+                    }
+                )
+
+                # -------------------------
+                # CREATE ORDER
+                # -------------------------
+                order = (
+                    supabase
+                    .table("orders")
+                    .insert({
+                        "user_id": st.session_state.user.id,
+                        "order_id": order_number,
+                        "full_name": full_name,
+                        "phone": phone,
+                        "address": address,
+                        "country": country,
+                        "state": state,
+                        "customer_email": customer_email,
+                        "total": total,
+                        "payment_method": payment_method,
+                        "payment_proof_path": file_path,
+                        "status": "Received"
+                    })
+                    .execute()
+                )
+
+                order_db_id = order.data[0]["id"]
+
+                # -------------------------
+                # CREATE ORDER ITEMS
+                # -------------------------
+                items = []
+
+                for pid, quantity in st.session_state.cart.items():
+
+                    product = product_map.get(pid)
+
+                    if product:
+
+                        items.append({
+                            "order_id": order_db_id,
+                            "product_id": str(product["id"]),
+                            "product_name": product["name"],
+                            "price": float(product["price"]),
+                            "quantity": quantity
+                        })
+
+                if items:
+
+                    (
+                        supabase
+                        .table("order_items")
+                        .insert(items)
+                        .execute()
+                    )
+
+                # -------------------------
+                # FORMSPREE NOTIFICATION
+                # -------------------------
+                if FORMSPREE_ENDPOINT:
+
+                    message = f"""
+NEW ORDER
+
+Order ID:
+{order_number}
+
+Customer:
+{full_name}
+
+Email:
+{customer_email}
+
+Phone:
+{phone}
+
+Delivery Address:
+{address}
+
+Country:
+{country}
+
+State:
+{state}
+
+Payment Method:
+{payment_method}
+
+Payment Proof:
+{payment_proof.name}
+
+Total:
+${total:,.2f}
+
+Status:
+Received
+
+IMPORTANT:
+Payment has NOT been verified yet.
+"""
+
+                    try:
+
+                        requests.post(
+                            FORMSPREE_ENDPOINT,
+                            data={
+                                "subject":
+                                    f"New Order - {order_number}",
+                                "message":
+                                    message,
+                                "email":
+                                    customer_email
+                            },
+                            files={
+                                "payment_proof": (
+                                    payment_proof.name,
+                                    file_bytes,
+                                    payment_proof.type
+                                )
+                            },
+                            timeout=20
+                        )
+
+                    except Exception:
+
+                        st.warning(
+                            "The order was saved, but the "
+                            "Formspree notification could not "
+                            "be sent."
+                        )
+
+                # -------------------------
+                # FINISH
+                # -------------------------
+                st.session_state.cart = {}
+
+                st.session_state.order_number = order_number
+
+                st.session_state.order_total = total
+
+                st.session_state.page = "Success"
+
+                st.rerun()
+
+            except Exception as e:
+
+                st.error(
+                    f"Could not create order: {e}"
+                )
 
         # -------------------------
         # CONFIRM ORDER
