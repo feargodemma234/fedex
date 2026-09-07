@@ -54,45 +54,45 @@ def get_products():
     return [
         {
             "id": 1, 
-            "name": "FedEx 10x13 Poly Mailer", 
-            "desc": "Pack of 100", 
-            "price": 15.00, 
-            "img": "https://images.unsplash.com/photo-1610576967309-7c4e8a7c2f5a?w=800" # Real poly mailers
+            "name": "Wireless Bluetooth Headphones", 
+            "desc": "Noise Cancelling, 40hr Battery", 
+            "price": 65.00, 
+            "img": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
         },
         {
             "id": 2, 
-            "name": "FedEx Digital Scale", 
-            "desc": "Up to 50lbs", 
-            "price": 95.00, 
-            "img": "https://images.unsplash.com/photo-1581091226825-a6a2a2aee158?w=800" # Digital shipping scale
+            "name": "Men's Running Sneakers", 
+            "desc": "Breathable Mesh, Size 40-45", 
+            "price": 120.00, 
+            "img": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800"
         },
         {
             "id": 3, 
-            "name": "FedEx Shipping Labels", 
-            "desc": "Roll of 500", 
-            "price": 25.00, 
-            "img": "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=800" # Shipping labels roll
+            "name": "Women's Casual Sneakers", 
+            "desc": "Lightweight, All-Day Comfort", 
+            "price": 110.00, 
+            "img": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800"
         },
         {
             "id": 4, 
-            "name": "FedEx Envelope", 
-            "desc": "Legal size", 
-            "price": 10.00, 
-            "img": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=800" # FedEx envelope
+            "name": "Wireless Earbuds", 
+            "desc": "Bluetooth 5.3, Touch Control", 
+            "price": 45.00, 
+            "img": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800"
         },
         {
             "id": 5, 
-            "name": "FedEx Thermal Printer", 
-            "desc": "4x6 Label Printer", 
-            "price": 280.00, 
-            "img": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" # Thermal label printer
+            "name": "Smartwatch", 
+            "desc": "Heart Rate, Fitness Tracker", 
+            "price": 95.00, 
+            "img": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"
         },
         {
             "id": 6, 
-            "name": "FedEx Tape", 
-            "desc": "Pack of 6 rolls", 
-            "price": 18.00, 
-            "img": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800" # Packing tape
+            "name": "Backpack", 
+            "desc": "Waterproof, Laptop Compartment", 
+            "price": 55.00, 
+            "img": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800"
         }
     ]
 
