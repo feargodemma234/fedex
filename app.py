@@ -231,7 +231,7 @@ elif st.session_state.page == "Checkout":
         country = st.text_input("Country")
         state = st.text_input("State")
         btc_address = st.text_input("Your BTC Wallet Address (Optional)", placeholder="bc1q... for refunds")
-        customer_email = st.text_input("Email", value=st.session_state.user.email)
+        email = st.text_input("Email", value=st.session_state.user.email)
 
         if st.form_submit_button("Save & Continue to Payment", use_container_width=True):
             if not all([full_name, phone, address, country, state]):
