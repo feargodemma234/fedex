@@ -123,30 +123,70 @@ def add_to_cart(product):
 def cart_total(): return sum(item["price"] * item["quantity"] for item in st.session_state.cart)
 
 # ========== AUTH ==========
+def sign_up(email, password):
+    try:
+        res = supabase.auth.sign_up({"email": email, "password": password})
+        if res.user: return True, "Account created! Check your email to confirm."
+        return False, "Signup failed. Please try again."
+    except Exception as e:
+        error_msg = str(e).lower()
+        if "rate limit" in error_msg or "email rate limit" in error_msg:
+            return False, "Too many signups from this device. Please wait 1 hour or use a different email."
+        elif "already registered" in error_msg:
+            return False, "This email already has an account. Try logging in."
+        elif "password" in error_msg:
+            return False, "Password must be at least 6 characters."
+        else:
+            return False, "Signup failed. Please check your email and password."
+
+def sign_in(email, password):
+    try:
+        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        if res.user:
+            st.session_state.user = res.user
+            return True, "Logged in!"
+        return False, "Login failed. Please try again."
+    except Exception as e:
+        error_msg = str(e).lower()
+        if "invalid login" in error_msg or "invalid credentials" in error_msg:
+            return False, "Wrong email or password. Please check and try again."
+        elif "email not confirmed" in error_msg:
+            return False, "Please confirm your email first. Check your inbox."
+        elif "rate limit" in error_msg:
+            return False, "Too many login attempts. Please wait 5 minutes."
+        else:
+            return False, "Login failed. Please check your email and password."
+
+def sign_out():
+    supabase.auth.sign_out()
+    st.session_state.user = None
+    st.session_state.cart = []
+    st.rerun()
+
 if not st.session_state.user:
-    st.title("📦 FedEx Store") # CHANGED NAME
+    st.title("📦 FedEx Store")
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
+    
     with tab1:
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         if st.button("Login", use_container_width=True):
-            try:
-                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                st.session_state.user = res.user; st.rerun()
-            except Exception as e:
-                if "Email not confirmed" in str(e): st.error("Please confirm your email first")
-                else: st.error("Invalid email or password")
+            success, msg = sign_in(email, password)
+            if success: st.rerun()
+            else: st.error(msg)
+    
     with tab2:
         email = st.text_input("Email", key="su_email")
         password = st.text_input("Password", type="password", key="su_pass")
         confirm = st.text_input("Confirm Password", type="password")
         if st.button("Create Account", use_container_width=True):
-            if password!= confirm: st.error("Passwords don't match")
+            if password != confirm: 
+                st.error("Passwords don't match")
             else:
-                try:
-                    supabase.auth.sign_up({"email": email, "password": password})
-                    st.success("Account created! Check your email to confirm, then login.")
-                except Exception as e: st.error(str(e))
+                success, msg = sign_up(email, password)
+                if success: st.success(msg)
+                else: st.error(msg)
+    
     st.stop()
 
 # ========== SIDEBAR ==========
