@@ -1,3 +1,15 @@
+st.set_page_config(page_title="Quantum Store", page_icon="🛒", layout="wide")
+
+# KILL STREAMLIT BRANDING
+st.markdown("""
+<style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    .viewerBadge_container__1QSob {display: none;}
+</style>
+""", unsafe_allow_html=True)
 import streamlit as st
 import uuid
 from datetime import datetime
