@@ -49,15 +49,25 @@ COUNTRY_TIMEZONES = {
     "Saudi Arabia": "Asia/Riyadh"
 }
 
-# ========== CSS ==========
 st.markdown("""
 <style>
-.stApp { background: #0b1120; color: #f8fafc; }
-.store-card { background: #1e293b; border-radius: 12px; padding: 16px; border: 1px solid #334155; margin-bottom: 20px; }
-.price { color: #22c55e; font-size: 22px; font-weight: 800; }
-.wallet-box { background: #0f172a; padding: 14px; border-radius: 8px; border: 1px dashed #22c55e; white-space: pre-wrap; word-break: break-all; }
-.success-box { background: #064e3b; padding: 16px; border-radius: 10px; border: 1px solid #059669; }
-.qr-box { text-align: center; background: white; padding: 10px; border-radius: 8px; max-width: 300px; margin: auto; }
+    /* Hide everything Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Hide the red crown deploy button */
+    .stDeployButton {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    
+    /* Hide "Manage app" badge + profile robot */
+    .viewerBadge_container__1QSob {display: none !important;}
+    .st-emotion-cache-1cypcdb {display: none !important;} /* new robot icon class */
+    .st-emotion-cache-18ni7ap {display: none !important;} /* old robot icon class */
+    
+    /* Hide top right corner completely */
+    [data-testid="stHeader"] {display: none !important;}
 </style>
 """, unsafe_allow_html=True)
 
