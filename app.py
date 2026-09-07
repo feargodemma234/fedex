@@ -67,7 +67,7 @@ def products():
                  ,"image_url":""},
                 {"id":str(uuid.uuid4()),"name":"Smart Watch",
                  "description":"Modern smart watch","price":35000,
-                 ","image_url":""},
+                 ","image_url":"},
                 {"id":str(uuid.uuid4()),"name":"Backpack",
                  "description":"Strong everyday backpack","price":18000,
                  ,"image_url":""},
