@@ -71,13 +71,45 @@ COUNTRY_TIMEZONES = {
 # ========== CSS ==========
 st.markdown("""
 <style>
-.stApp { background: #0b1120; color: #f8fafc; }
-.store-card { background: #1e293b; border-radius: 12px; padding: 16px; border: 1px solid #334155; margin-bottom: 20px; }
-.price { color: #22c55e; font-size: 22px; font-weight: 800; }
-.wallet-box { background: #0f172a; padding: 14px; border-radius: 8px; border: 1px dashed #22c55e; white-space: pre-wrap; word-break: break-all; }
-.success-box { background: #064e3b; padding: 16px; border-radius: 10px; border: 1px solid #059669; }
-.qr-box { text-align: center; background: white; padding: 10px; border-radius: 8px; max-width: 300px; margin: auto; }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display: none;}
+    [data-testid="stToolbar"] {display: none;}
+    .viewerBadge_container__1QSob {display: none;}
+    
+    /* BOTTOM LOGO BAR TO COVER "MANAGE APP" */
+    .bottom-bar {
+        position: fixed;
+        bottom: 0; /* stick to bottom */
+        left: 0;
+        right: 0;
+        height: 65px;
+        background: #0b1120;
+        border-top: 2px solid #22c55e;
+        z-index: 999; /* puts it above the manage app button */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 20px;
+    }
+    .bottom-bar h1 {
+        color: #22c55e;
+        font-size: 20px;
+        margin: 0;
+        font-weight: 800;
+    }
+    .block-container {
+        padding-bottom: 5rem !important; /* add space so content doesn't hide under bar */
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# BOTTOM LOGO BAR HTML
+st.markdown("""
+<div class="bottom-bar">
+    <h1>🛒 QUANTUM STORE</h1>
+</div>
 """, unsafe_allow_html=True)
 
 # ========== REST OF YOUR CODE ==========
