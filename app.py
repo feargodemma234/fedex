@@ -5,17 +5,20 @@ import urllib.parse
 import qrcode
 from io import BytesIO
 st.set_page_config(page_title="Quantum Store", page_icon="🛒", layout="wide")
+import streamlit as st
 
-# KILL STREAMLIT BRANDING
+st.set_page_config(page_title="Quantum Store", page_icon="🛒", layout="wide")
+
+# THIS HIDES THE CROWN AND "MADE WITH STREAMLIT"
 st.markdown("""
 <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
-    .viewerBadge_container__1QSob {display: none;}
+    .viewerBadge_container__1QSob {display: none;} /* This is the crown */
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True:
 
 st.set_page_config(page_title="FedEx Shipping Supplies", page_icon="📦", layout="wide")
 
