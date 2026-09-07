@@ -52,12 +52,48 @@ def generate_qr(data):
 @st.cache_data
 def get_products():
     return [
-        {"id": 1, "name": "FedEx 10x13 Poly Mailer", "desc": "Pack of 100", "price": 15.00, "img": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800"},
-        {"id": 2, "name": "FedEx Digital Scale", "desc": "Up to 50lbs", "price": 95.00, "img": "https://images.unsplash.com/photo-1581091226825-a6a2a2aee158?w=800"},
-        {"id": 3, "name": "FedEx Shipping Labels", "desc": "Roll of 500", "price": 25.00, "img": "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800"},
-        {"id": 4, "name": "FedEx Envelope", "desc": "Legal size", "price": 10.00, "img": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=800"},
-        {"id": 5, "name": "FedEx Thermal Printer", "desc": "4x6 Label Printer", "price": 280.00, "img": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"},
-        {"id": 6, "name": "FedEx Tape", "desc": "Pack of 6 rolls", "price": 18.00, "img": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800"}
+        {
+            "id": 1, 
+            "name": "FedEx 10x13 Poly Mailer", 
+            "desc": "Pack of 100", 
+            "price": 15.00, 
+            "img": "https://images.unsplash.com/photo-1610576967309-7c4e8a7c2f5a?w=800" # Real poly mailers
+        },
+        {
+            "id": 2, 
+            "name": "FedEx Digital Scale", 
+            "desc": "Up to 50lbs", 
+            "price": 95.00, 
+            "img": "https://images.unsplash.com/photo-1581091226825-a6a2a2aee158?w=800" # Digital shipping scale
+        },
+        {
+            "id": 3, 
+            "name": "FedEx Shipping Labels", 
+            "desc": "Roll of 500", 
+            "price": 25.00, 
+            "img": "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=800" # Shipping labels roll
+        },
+        {
+            "id": 4, 
+            "name": "FedEx Envelope", 
+            "desc": "Legal size", 
+            "price": 10.00, 
+            "img": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=800" # FedEx envelope
+        },
+        {
+            "id": 5, 
+            "name": "FedEx Thermal Printer", 
+            "desc": "4x6 Label Printer", 
+            "price": 280.00, 
+            "img": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" # Thermal label printer
+        },
+        {
+            "id": 6, 
+            "name": "FedEx Tape", 
+            "desc": "Pack of 6 rolls", 
+            "price": 18.00, 
+            "img": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800" # Packing tape
+        }
     ]
 
 def add_to_cart(product):
