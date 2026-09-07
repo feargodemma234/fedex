@@ -1,3 +1,9 @@
+import streamlit as st
+import uuid
+from datetime import datetime
+import urllib.parse
+import qrcode
+from io import BytesIO
 st.set_page_config(page_title="Quantum Store", page_icon="🛒", layout="wide")
 
 # KILL STREAMLIT BRANDING
@@ -10,12 +16,6 @@ st.markdown("""
     .viewerBadge_container__1QSob {display: none;}
 </style>
 """, unsafe_allow_html=True)
-import streamlit as st
-import uuid
-from datetime import datetime
-import urllib.parse
-import qrcode
-from io import BytesIO
 
 st.set_page_config(page_title="FedEx Shipping Supplies", page_icon="📦", layout="wide")
 
