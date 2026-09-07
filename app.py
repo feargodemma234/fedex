@@ -200,9 +200,7 @@ elif st.session_state.page == "Admin" and is_admin():
     st.title("Admin Dashboard 📊")
     st.write("View and manage orders here")
     
-    # TODO: orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
-    # For now using fake data
-    orders = []
+    orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
     
     if not orders:
         st.info("No orders yet")
@@ -215,17 +213,7 @@ elif st.session_state.page == "Admin" and is_admin():
                 st.write(f"**Status:** {o['order_status']}")
                 st.write(f"**Date:** {o['created_at']}")
                 
-                new_status = st.selectbox(
-                    "Update Status", 
-                    ["pending", "processing", "shipped", "delivered", "cancelled"],
-                    key=o['id']
-                )
-                if st.button("Update", key=f"btn_{o['id']}"):
-                    # supnew_status = st.selectbox(
-                    "Update Status",
-                    ["pending", "processing", "shipped", "delivered", "cancelled"],
-                    key=o['id']
-                )
+                new_status = st.selectbox("Update Status", ["pending", "processing", "shipped", "delivered", "cancelled"], key=o['id'])
                 if st.button("Update", key=f"btn_{o['id']}"):
                     supabase.table("orders").update({"order_status": new_status}).eq("id", o['id']).execute()
                     st.success("Status Updated!")
