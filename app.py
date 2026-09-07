@@ -64,16 +64,16 @@ def products():
             samples = [
                 {"id":str(uuid.uuid4()),"name":"Wireless Headphones",
                  "description":"Quality wireless headphones","price":25000,
-                 "image_url":"},
+                 "image_url"},
                 {"id":str(uuid.uuid4()),"name":"Smart Watch",
                  "description":"Modern smart watch","price":35000,
-                 "image_url":"},
+                 "image_url"},
                 {"id":str(uuid.uuid4()),"name":"Backpack",
                  "description":"Strong everyday backpack","price":18000,
-                 "image_url":"},
+                 "image_url"},
                 {"id":str(uuid.uuid4()),"name":"Sneakers",
                  "description":"Comfortable everyday sneakers","price":30000,
-                 "image_url":"}
+                 "image_url"}
             ]
             sb.table("products").insert(samples).execute()
             data = samples
