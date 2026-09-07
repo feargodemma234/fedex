@@ -26,6 +26,7 @@ st.markdown("""
     .success-box { background: #064e3b; padding: 16px; border-radius: 10px; border: 1px solid #059669; }
     .warning-box { background: #7c2d12; padding: 16px; border-radius: 10px; border: 1px solid #dc2626; }
     .qr-box { text-align: center; background: white; padding: 10px; border-radius: 8px; max-width: 300px; margin: auto; }
+    .reply-box { background: #1e293b; padding: 16px; border-radius: 8px; border: 1px solid #475569; white-space: pre-wrap; }
     .block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -35,7 +36,6 @@ STORE_EMAIL = "quantumindustries258@gmail.com"
 ADMIN_EMAILS = ["quantumindustries258@gmail.com"]
 BTC_ADDRESS = "bc1qtl8hcsssakafwa4a9xrzjfl8thwdkjdmv292tm"
 
-# ILLEGAL KEYWORDS LIST - Auto block these
 ILLEGAL_KEYWORDS = [
     'gun', 'weapon', 'drug', 'cocaine', 'weed', 'marijuana', 'heroin', 
     'knife', 'explosive', 'bomb', 'passport', 'id card', 'fake id',
@@ -44,7 +44,7 @@ ILLEGAL_KEYWORDS = [
 
 PAYMENT_WALLETS = {
     "Bank Transfer": "Bank: OPay\nAccount No: 9032113433\nAccount Name: Deborah Oluchukwu Phillips",
-    "Gift Card": "Send to Email: quantumindustries258@gmail.com",
+    "Gift Card": "Send to Email: quantumindustries258@gmail.com\nAccepted: iTunes, Amazon, Steam, Google Play",
     "Bitcoin": BTC_ADDRESS
 }
 
@@ -123,7 +123,11 @@ def show_auth():
 if st.session_state.user is None: show_auth(); st.stop()
 
 # ========== TOP NAV FOR MOBILE ==========
-c1, c2, c3, c4, c5 = st.columns([2.5,1,1,1,1])
+if is_admin():
+    c1, c2, c3, c4, c5, c6 = st.columns([2,1,1,1,1,1])
+else:
+    c1, c2, c3, c4, c5 = st.columns([2.5,1,1,1,1])
+    
 with c1: st.write(f"**Hi, {st.session_state.user.email}**")
 with c2:
     if st.button("🏪 Store"): st.session_state.page = "Store"; st.rerun()
@@ -131,8 +135,14 @@ with c3:
     if st.button("📦 Request"): st.session_state.page = "Request"; st.rerun()
 with c4:
     if st.button(f"🛒 {cart_count()}"): st.session_state.page = "Cart"; st.rerun()
-with c5:
-    if st.button("Logout"): logout()
+if is_admin():
+    with c5:
+        if st.button("⚙️ Admin"): st.session_state.page = "Admin"; st.rerun()
+    with c6:
+        if st.button("Logout"): logout()
+else:
+    with c5:
+        if st.button("Logout"): logout()
 
 products = get_products()
 
@@ -164,29 +174,19 @@ elif st.session_state.page == "Request":
         if submitted:
             if not req_name or not req_product:
                 st.error("Please fill in Name and Product Name")
-            elif check_illegal(req_product + " " + req_details):
+            elif check_illegal(req_product + " + req_details):
                 st.markdown('<div class="warning-box">', unsafe_allow_html=True)
                 st.error("❌ We don't provide that. Sorry, we cannot process requests for illegal or restricted items.")
                 st.markdown('</div>', unsafe_allow_html=True)
             else:
-                # Prepare email
                 subject = f"Product Request - {req_product}"
-                body = f"""New Product Request
-
-Name: {req_name}
-Email: {req_email}
-Product: {req_product}
-Quantity: {req_qty}
-Details: {req_details}
-
-Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+                body = f"""New Product Request\n\nName: {req_name}\nEmail: {req_email}\nProduct: {req_product}\nQuantity: {req_qty}\nDetails: {req_details}\n\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
                 mailto_link = f"mailto:{STORE_EMAIL}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
                 
                 st.markdown('<div class="success-box">', unsafe_allow_html=True)
                 st.success(f"✅ Request Sent! We will reply to {req_email} within 24 hours with price and availability.")
                 st.markdown('</div>', unsafe_allow_html=True)
                 
-                # AUTO OPEN GMAIL
                 st.markdown(f'<meta http-equiv="refresh" content="0; url={mailto_link}">', unsafe_allow_html=True)
                 st.link_button("📧 Click if Gmail didn't open", mailto_link)
 
@@ -238,5 +238,62 @@ elif st.session_state.page == "Checkout":
                     st.rerun()
 
 elif st.session_state.page == "Admin" and is_admin():
-    st.title("📊 Admin Dashboard")
-    st.info("Connect Supabase to see real orders here")
+    st.title("⚙️ Admin Dashboard")
+    
+    tab1, tab2 = st.tabs(["Reply Generator", "Info"])
+    
+    with tab1:
+        st.subheader("📧 Generate Quote + Payment Reply")
+        st.write("Fill this to generate a professional reply for product requests")
+        
+        cust_name = st.text_input("Customer Name")
+        cust_email = st.text_input("Customer Email")
+        prod_name = st.text_input("Product Requested")
+        prod_price = st.number_input("Price $", min_value=0.0, step=5.0)
+        availability = st.selectbox("Availability", ["In Stock", "Available in 3-5 days", "Available in 1-2 weeks"])
+        
+        st.markdown("---")
+        st.subheader("Payment Methods to Include")
+        show_bank = st.checkbox("Bank Transfer", value=True)
+        show_gift = st.checkbox("Gift Card", value=True)
+        show_btc = st.checkbox("Bitcoin", value=False)
+        
+        if st.button("Generate Reply", type="primary", use_container_width=True):
+            payment_section = ""
+            if show_bank:
+                payment_section += f"\n**🏦 BANK TRANSFER**\n{PAYMENT_WALLETS['Bank Transfer']}\n"
+            if show_gift:
+                payment_section += f"\n**🎁 GIFT CARD**\n{PAYMENT_WALLETS['Gift Card']}\n"
+            if show_btc:
+                payment_section += f"\n**₿ BITCOIN**\n{PAYMENT_WALLETS['Bitcoin']}\n"
+            
+            reply = f"""Hello {cust_name},
+
+Thank you for reaching out to QuantumKicks! 🙏
+
+Regarding your request for: **{prod_name}**
+
+**Availability:** {availability}
+**Price:** ${prod_price:.2f}
+
+If you're ready to proceed, please kindly make your payment using any of the options below:
+
+{payment_section}
+After payment, please reply to this email with your proof of payment and delivery address. 
+We will confirm and ship your order within 24 hours.
+
+Thank you for choosing QuantumKicks - Quality Delivered! 🔥
+
+Best regards,  
+Team QuantumKicks  
+{STORE_EMAIL}
+"""
+            st.markdown('<div class="reply-box">', unsafe_allow_html=True)
+            st.code(reply, language=None)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            mailto_reply = f"mailto:{cust_email}?subject={urllib.parse.quote(f'Quote for {prod_name} - QuantumKicks')}&body={urllib.parse.quote(reply)}"
+            st.link_button("📧 Open Gmail to Send Reply", mailto_reply, use_container_width=True, type="primary")
+    
+    with tab2:
+        st.info("Orders will appear here once we connect Supabase")
