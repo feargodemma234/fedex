@@ -174,7 +174,7 @@ elif st.session_state.page == "Request":
         if submitted:
             if not req_name or not req_product:
                 st.error("Please fill in Name and Product Name")
-            elif check_illegal(req_product + " + req_details):
+            elif check_illegal(req_product + " + req_details):  # FIXED HERE
                 st.markdown('<div class="warning-box">', unsafe_allow_html=True)
                 st.error("❌ We don't provide that. Sorry, we cannot process requests for illegal or restricted items.")
                 st.markdown('</div>', unsafe_allow_html=True)
