@@ -197,60 +197,133 @@ elif st.session_state.page == "Cart":
 # ========== CHECKOUT ==========
 elif st.session_state.page == "Checkout":
     st.title("💳 Checkout")
-    with st.form("checkout"):
+    
+    # STEP 1: CUSTOMER INFO
+    st.subheader("1. Customer Information")
+    with st.form("customer_info"):
         full_name = st.text_input("Full Name")
         phone = st.text_input("Phone")
         address = st.text_area("Address")
         country = st.text_input("Country")
         state = st.text_input("State")
+        customer_email = st.text_input("Email", value=st.session_state.user.email)
         
-        st.subheader("Payment Method")
-        payment_method = st.radio("Choose", ["Bank Transfer", "Gift Card"])
-        
-        if payment_method == "Bank Transfer":
-            st.info(f"**Bank:** {settings['bank_name']}\n**Account:** {settings['account_number']}\n**Name:** {settings['account_name']}")
-        
-        payment_proof = st.file_uploader("Upload Payment Proof JPG/PNG", type=["jpg","jpeg","png","webp"])
-        
-        if st.form_submit_button("✅ Confirm Order", use_container_width=True):
-            if not all([full_name, phone, address, country, state]): st.error("Fill all fields"); st.stop()
-            if not payment_proof: st.error("Upload payment proof"); st.stop()
-            
-            # 1. Upload proof
-            file_bytes = payment_proof.read()
-            file_path = f"{st.session_state.user.id}/{uuid.uuid4()}_{payment_proof.name}"
-            supabase.storage.from_("payment-proofs").upload(file_path, file_bytes)
-            proof_url = supabase.storage.from_("payment-proofs").get_public_url(file_path)
-            
-            # 2. Create order
-            order_code = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-            order_data = {
-                "order_code": order_code, "user_id": st.session_state.user.id,
-                "full_name": full_name, "phone": phone, "address": address,
-                "country": country, "state": state, "customer_email": st.session_state.user.email,
-                "payment_method": payment_method, "payment_proof_url": proof_url,
-                "total": cart_total(), "status": "Received"
-            }
-            order_res = supabase.table("orders").insert(order_data).execute()
-            order_id = order_res.data[0]["id"]
-            
-            # 3. Order items
-            items = [{
-                "order_id": order_id, "product_id": i["id"], "product_name": i["name"],
-                "quantity": i["quantity"], "unit_price": i["price"]
-            } for i in st.session_state.cart]
-            supabase.table("order_items").insert(items).execute()
-            
-            # 4. SEND DIRECT EMAIL
-            customer_info = {"full_name": full_name, "email": st.session_state.user.email, "phone": phone, "address": address, "state": state, "country": country}
-            email_sent = send_order_email(order_code, customer_info, st.session_state.cart, cart_total(), payment_method, proof_url)
-            
-            st.session_state.cart = []
-            st.session_state.page = "Confirmation"
-            st.session_state.last_order = order_code
-            if email_sent: st.success("Order + Email sent to owner!")
-            st.rerun()
+        if st.form_submit_button("Save & Continue to Payment", use_container_width=True):
+            if not all([full_name, phone, address, country, state]): 
+                st.error("Fill all fields")
+            else:
+                st.session_state.checkout_info = {
+                    "full_name": full_name, "phone": phone, "address": address,
+                    "country": country, "state": state, "email": customer_email
+                }
+                st.session_state.page = "Payment"
+                st.rerun()
 
+# ========== PAYMENT PAGE ==========
+elif st.session_state.page == "Payment":
+    st.title("💳 Payment")
+    
+    info = st.session_state.get("checkout_info")
+    if not info:
+        st.error("Please fill customer info first")
+        if st.button("Back"): st.session_state.page = "Checkout"; st.rerun()
+        st.stop()
+    
+    # ORDER SUMMARY
+    st.subheader("Order Summary")
+    for item in st.session_state.cart:
+        st.write(f"**{item['name']}** x {item['quantity']} = ${item['price']*item['quantity']:.2f}")
+    st.markdown(f"### Total: ${cart_total():.2f}")
+    st.divider()
+    
+    # STEP 2: CHOOSE PAYMENT
+    st.subheader("2. Choose Payment Method")
+    payment_method = st.radio("Payment Method", ["Bank Transfer", "Gift Card"], horizontal=True)
+    
+    if payment_method == "Bank Transfer":
+        st.markdown(f"""
+        <div class="store-card">
+        <h3>🏦 Bank Transfer Details</h3>
+        <p><b>Bank:</b> {settings['bank_name']}</p>
+        <p><b>Account Name:</b> {settings['account_name']}</p>
+        <p><b>Account Number:</b> {settings['account_number']}</p>
+        <p class="muted">After transfer, tap the button below to send proof to our store email.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    else: # Gift Card
+        st.markdown(f"""
+        <div class="store-card">
+        <h3>🎁 Gift Card</h3>
+        <p>{settings['giftcard_instructions']}</p>
+        <p class="muted">After buying, tap the button below to send photo of card to our store email.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # STEP 3: GMAIL REDIRECT BUTTON
+    order_code = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    subject = f"Payment Proof - {order_code}"
+    body = f"""Hello Quantum Store,
+
+I am sending payment proof for my order.
+
+Order Number: {order_code}
+Name: {info['full_name']}
+Email: {info['email']}
+Phone: {info['phone']}
+Payment Method: {payment_method}
+Order Total: ${cart_total():.2f}
+
+I have attached my payment proof/screenshot.
+
+Thank you."""
+    
+    mailto_link = f"mailto:{STORE_EMAIL}?subject={subject}&body={body}"
+    
+    st.markdown(f"""
+    <a href="{mailto_link}" target="_blank" 
+    style="display:block;text-align:center;background:#2563eb;color:white;
+    padding:15px;border-radius:10px;text-decoration:none;font-weight:700;
+    font-size:17px;margin-top:10px;">
+    📎 Send Payment Proof via Gmail
+    </a>
+    """, unsafe_allow_html=True)
+    
+    st.warning("After sending the email, come back and tap 'Confirm Order' below")
+    
+    if st.button("✅ Confirm Order - I have sent the proof", use_container_width=True):
+        # Save order to DB without proof_url first
+        order_data = {
+            "order_code": order_code, "user_id": st.session_state.user.id,
+            "full_name": info['full_name'], "phone": info['phone'], "address": info['address'],
+            "country": info['country'], "state": info['state'], "customer_email": info['email'],
+            "payment_method": payment_method, "payment_proof_url": None, # proof comes via email
+            "total": cart_total(), "status": "Received"
+        }
+        order_res = supabase.table("orders").insert(order_data).execute()
+        order_id = order_res.data[0]["id"]
+        
+        # Order items
+        items = [{
+            "order_id": order_id, "product_id": i["id"], "product_name": i["name"],
+            "quantity": i["quantity"], "unit_price": i["price"]
+        } for i in st.session_state.cart]
+        supabase.table("order_items").insert(items).execute()
+        
+        # Send email notification to owner too
+        send_order_email(order_code, info, st.session_state.cart, cart_total(), payment_method, "Proof sent via customer Gmail")
+        
+        st.session_state.cart = []
+        st.session_state.page = "Confirmation"
+        st.session_state.last_order = order_code
+        st.rerun()
+    
+    if st.button("← Back to Info"): st.session_state.page = "Checkout"; st.rerun()
+
+# ========== CONFIRMATION ==========
+elif st.session_state.page == "Confirmation":
+    st.markdown(f'<div class="success-box"><h2>✅ Order Received!</h2><p>Order ID: <strong>{st.session_state.last_order}</strong></p><p>We received your order. Please check your Gmail "Sent" folder to confirm you sent the payment proof to {STORE_EMAIL}</p></div>', unsafe_allow_html=True)
+    if st.button("Continue Shopping"): st.session_state.page = "Store"; st.rerun()
 # ========== CONFIRMATION ==========
 elif st.session_state.page == "Confirmation":
     st.markdown(f'<div class="success-box"><h2>✅ Order Received!</h2><p>Order ID: <strong>{st.session_state.last_order}</strong></p><p>We will verify your payment and update you.</p></div>', unsafe_allow_html=True)
