@@ -102,17 +102,17 @@ def auth_page():
     st.title("📦 FedEx Store")
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
     with tab1:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Login", use_container_width=True):
+        email = st.text_input("Email", key="login_email")  # ADDED KEY
+        password = st.text_input("Password", type="password", key="login_pass") # ADDED KEY
+        if st.button("Login", use_container_width=True, key="login_btn"): # ADDED KEY
             # res = supabase.auth.sign_in_with_password({"email": email, "password": password})
             st.session_state.user = type('obj', (object,), {'email': email}) # fake login
             st.rerun()
     with tab2:
         email = st.text_input("Email ", key="su_email")
         password = st.text_input("Password ", type="password", key="su_pass")
-        confirm = st.text_input("Confirm Password", type="password")
-        if st.button("Create Account", use_container_width=True):
+        confirm = st.text_input("Confirm Password", type="password", key="su_confirm") # ADDED KEY
+        if st.button("Create Account", use_container_width=True, key="su_btn"): # ADDED KEY
             if password!= confirm: st.error("Passwords don't match")
             else:
                 # supabase.auth.sign_up({"email": email, "password": password})
