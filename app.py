@@ -5,7 +5,6 @@ import pytz
 import urllib.parse
 import qrcode
 from io import BytesIO
-import re
 
 st.set_page_config(page_title="QuantumKicks", page_icon="🛒", layout="wide")
 
@@ -36,12 +35,6 @@ STORE_EMAIL = "quantumindustries258@gmail.com"
 ADMIN_EMAILS = ["quantumindustries258@gmail.com"]
 BTC_ADDRESS = "bc1qtl8hcsssakafwa4a9xrzjfl8thwdkjdmv292tm"
 
-ILLEGAL_KEYWORDS = [
-    'gun', 'weapon', 'drug', 'cocaine', 'weed', 'marijuana', 'heroin', 
-    'knife', 'explosive', 'bomb', 'passport', 'id card', 'fake id',
-    'adult', 'porn', 'xxx', 'nude'
-]
-
 PAYMENT_WALLETS = {
     "Bank Transfer": "Bank: OPay\nAccount No: 9032113433\nAccount Name: Deborah Oluchukwu Phillips",
     "Gift Card": "Send to Email: quantumindustries258@gmail.com\nAccepted: iTunes, Amazon, Steam, Google Play",
@@ -64,13 +57,6 @@ if "pending_order" not in st.session_state: st.session_state.pending_order = Non
 def is_admin(): return st.session_state.user and st.session_state.user.email in ADMIN_EMAILS
 def logout():
     st.session_state.clear(); st.rerun()
-
-def check_illegal(text):
-    text_lower = text.lower()
-    for word in ILLEGAL_KEYWORDS:
-        if word in text_lower:
-            return True
-    return False
 
 def generate_qr(data):
     qr = qrcode.QRCode(version=1, box_size=10, border=4)
@@ -174,11 +160,7 @@ elif st.session_state.page == "Request":
         if submitted:
             if not req_name or not req_product:
                 st.error("Please fill in Name and Product Name")
-            elif check_illegal(req_product + " + req_details):  # FIXED: added space in quotes
-                st.markdown('<div class="warning-box">', unsafe_allow_html=True)
-                st.error("❌ We don't provide that. Sorry, we cannot process requests for illegal or restricted items.")
-                st.markdown('</div>', unsafe_allow_html=True)
-            else:
+            else:  # REMOVED THE ILLEGAL CHECK
                 subject = f"Product Request - {req_product}"
                 body = f"""New Product Request\nName: {req_name}\nEmail: {req_email}\nProduct: {req_product}\nQuantity: {req_qty}\nDetails: {req_details}\n\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
                 mailto_link = f"mailto:{STORE_EMAIL}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
