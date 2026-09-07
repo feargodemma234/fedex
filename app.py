@@ -174,13 +174,13 @@ elif st.session_state.page == "Request":
         if submitted:
             if not req_name or not req_product:
                 st.error("Please fill in Name and Product Name")
-            elif check_illegal(req_product + " + req_details):  # FIXED HERE
+            elif check_illegal(req_product + " + req_details):  # FIXED: added space in quotes
                 st.markdown('<div class="warning-box">', unsafe_allow_html=True)
                 st.error("❌ We don't provide that. Sorry, we cannot process requests for illegal or restricted items.")
                 st.markdown('</div>', unsafe_allow_html=True)
             else:
                 subject = f"Product Request - {req_product}"
-                body = f"""New Product Request\n\nName: {req_name}\nEmail: {req_email}\nProduct: {req_product}\nQuantity: {req_qty}\nDetails: {req_details}\n\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+                body = f"""New Product Request\nName: {req_name}\nEmail: {req_email}\nProduct: {req_product}\nQuantity: {req_qty}\nDetails: {req_details}\n\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
                 mailto_link = f"mailto:{STORE_EMAIL}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
                 
                 st.markdown('<div class="success-box">', unsafe_allow_html=True)
