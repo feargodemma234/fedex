@@ -1,0 +1,8 @@
+{
+  "builds": [
+    {
+      "src": "Procfile",
+      "use": "@vercel/static-build"
+    }
+  ]
+}
