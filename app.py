@@ -134,6 +134,24 @@ else:
 
     products = load_products()
 
+    # ========== ROUTER ==========
+if st.session_state.user is None:
+    auth_page()
+
+else:
+    # Sidebar only shows when logged in
+    with st.sidebar:
+        st.write(f"Logged in: {st.session_state.user.email}")
+        if st.button("Store", use_container_width=True): st.session_state.page = "Store"; st.rerun()
+        if st.button(f"Cart ({sum(i['quantity'] for i in st.session_state.cart)})", use_container_width=True): st.session_state.page = "Cart"; st.rerun()
+        if st.button("Checkout", use_container_width=True): st.session_state.page = "Checkout"; st.rerun()
+        if is_admin():
+            if st.button("Admin", use_container_width=True): st.session_state.page = "Admin"; st.rerun()
+        st.divider()
+        if st.button("Logout", use_container_width=True): logout(); st.rerun()
+
+    products = load_products()
+
     # ========== STORE PAGE ==========
     if st.session_state.page == "Store":
         st.title("📦 FedEx Shipping Supplies")
@@ -175,7 +193,6 @@ else:
             address = st.text_area("Address *")
             country = st.text_input("Country *", "USA")
             state = st.text_input("State *")
-
             st.subheader("Payment Method")
             st.info("We will contact you for payment. Options: Pay on Delivery or Bank Transfer")
 
@@ -183,38 +200,26 @@ else:
                 if not all([full_name, phone, address, country, state]):
                     st.error("Please fill all * fields")
                 else:
-                    with st.spinner("Processing..."):
-                        order_code = f"FEDEX-{uuid.uuid4().hex[:8].upper()}"
-                        customer_info = {"full_name": full_name, "email": email, "phone": phone, "address": address, "country": country, "state": state}
+                    order_code = f"FEDEX-{uuid.uuid4().hex[:8].upper()}"
+                    customer_info = {"full_name": full_name, "email": email, "phone": phone, "address": address, "country": country, "state": state}
+                    # TODO: supabase.table("orders").insert({...}).execute()
+                    send_order_email(order_code, customer_info, st.session_state.cart, cart_total())
+                    st.markdown(f'<div class="success-box"><h2>Order Placed! 🎉</h2>Order ID: <strong>{order_code}</strong><br>We will email you shortly.</div>', unsafe_allow_html=True)
+                    st.session_state.cart = []
 
-                        # TODO: supabase.table("orders").insert({...}).execute()
-
-                        send_order_email(order_code, customer_info, st.session_state.cart, cart_total())
-
-                        st.markdown(f'<div class="success-box"><h2>Order Placed! 🎉</h2>Order ID: <strong>{order_code}</strong><br>We will email you shortly.</div>', unsafe_allow_html=True)
-                        st.session_state.cart = []
-                        st.session_state.page = "Store"
-
-    # ========== ADMIN ==========
-elif st.session_state.page == "Admin" and is_admin():
-    st.title("Admin Dashboard 📊")
-    st.write("View and manage orders here")
-    
-    orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
-    
-    if not orders:
-        st.info("No orders yet")
-    else:
-        for o in orders:
-            with st.expander(f"Order: {o['order_code']} - {o['full_name']} - ${o['total']:.2f}"):
-                st.write(f"**Email:** {o['customer_email']}")
-                st.write(f"**Phone:** {o['phone']}")
-                st.write(f"**Address:** {o['address']}")
-                st.write(f"**Status:** {o['order_status']}")
-                st.write(f"**Date:** {o['created_at']}")
-                
-                new_status = st.selectbox("Update Status", ["pending", "processing", "shipped", "delivered", "cancelled"], key=o['id'])
-                if st.button("Update", key=f"btn_{o['id']}"):
-                    supabase.table("orders").update({"order_status": new_status}).eq("id", o['id']).execute()
-                    st.success("Status Updated!")
-                    st.rerun()
+    # ========== ADMIN PAGE ==========
+    elif st.session_state.page == "Admin" and is_admin():
+        st.title("Admin Dashboard 📊")
+        st.write("View and manage orders here")
+        orders = supabase.table("orders").select("*").order("created_at", desc=True).execute().data
+        if not orders: st.info("No orders yet")
+        else:
+            for o in orders:
+                with st.expander(f"Order: {o['order_code']} - {o['full_name']} - ${o['total']:.2f}"):
+                    st.write(f"**Email:** {o['customer_email']}")
+                    st.write(f"**Status:** {o['order_status']}")
+                    new_status = st.selectbox("Update Status", ["pending", "processing", "shipped", "delivered", "cancelled"], key=o['id'])
+                    if st.button("Update", key=f"btn_{o['id']}"):
+                        supabase.table("orders").update({"order_status": new_status}).eq("id", o['id']).execute()
+                        st.success("Status Updated!")
+                        st.rerun()
