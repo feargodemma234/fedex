@@ -93,15 +93,8 @@ def load_products():
         {"id": str(uuid.uuid4()), "name": "Wireless Headphones", "description": "Noise cancelling bluetooth", "price": 49.99, "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"},
         {"id": str(uuid.uuid4()), "name": "Bluetooth Speaker", "description": "Portable waterproof speaker", "price": 34.99, "image_url": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400"},
         {"id": str(uuid.uuid4()), "name": "Smart Watch", "description": "Fitness tracker with heart rate", "price": 89.99, "image_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"},
-        {"id": str(uuid.uuid4()), "name": "Wireless Mouse", "description": "Ergonomic gaming mouse", "price": 24.99, "image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400"},
-        # YOUR UPLOADED PHOTOS FROM SUPABASE - UPLOAD THESE 5 FIRST
-        {"id": str(uuid.uuid4()), "name": "Knitted 2-Piece Set", "description": "Beige/Brown short sleeve shirt + shorts", "price": 65.00, "image_url": BASE_URL + "2piece.jpg"},
-        {"id": str(uuid.uuid4()), "name": "Varsity Jacket", "description": "Black and white letter C varsity jacket", "price": 120.00, "image_url": BASE_URL + "jacket.jpg"},
-        {"id": str(uuid.uuid4()), "name": "Kids Tracksuit", "description": "Black zip hoodie + joggers set", "price": 55.00, "image_url": BASE_URL + "tracksuit.jpg"},
-        {"id": str(uuid.uuid4()), "name": "Bomber Jacket", "description": "Brown lightweight bomber jacket", "price": 70.00, "image_url": BASE_URL + "bomber.jpg"},
-        {"id": str(uuid.uuid4()), "name": "ATM Banking Service", "description": "Card withdrawal & transfer service", "price": 5.00, "image_url": BASE_URL + "atm.jpg"},
-        
-        # SNEAKERS
+        {"id": str(uuid.uuid4()), "name": "Wireless Mouse", "description": "Ergonomic gaming mouse", "price": 24.99, "image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400"},    
+         # SNEAKERS
         {"id": str(uuid.uuid4()), "name": "Sneakers", "description": "Casual running sneakers", "price": 85.00, "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"},
     ]
 
