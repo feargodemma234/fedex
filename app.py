@@ -1,0 +1,127 @@
+import streamlit as st
+import urllib.parse
+
+st.set_page_config(page_title="QuantumKicks", layout="centered", page_icon="📦")
+
+# Custom CSS
+st.markdown("""
+<style>
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+    }
+    .logo {
+        font-size: 22px;
+        font-weight: 800;
+        color: #10B981; /* green */
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .auth-container button {
+        background: #1a1a1a;
+        color: white;
+        border: 1px solid #333;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-left: 8px;
+    }
+    .hero-box {
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        padding: 50px 24px;
+        border-radius: 0 0 40px 40px;
+        text-align: center;
+        color: white;
+        margin: 20px 0 30px 0;
+    }
+    .hero-box h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 0 0 12px 0;
+        line-height: 1.2;
+    }
+    .hero-box p {
+        font-size: 15px;
+        color: #E0E7FF;
+        margin: 0;
+    }
+    div[data-testid="stFormSubmitButton"] > button {
+        background: #EF4444; /* RED BUTTON */
+        color: white;
+        border: none;
+        padding: 14px 0;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        width: 100%;
+    }
+    .info-card {
+        background: #1a1a1a;
+        padding: 16px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# TOP BAR WITH LOGO + BUTTONS
+col1, col2 = st.columns([3,2])
+with col1:
+    st.markdown('<div class="logo">🛒 QuantumKicks</div>', unsafe_allow_html=True)
+with col2:
+    st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    with c1:
+        st.button("Sign In")
+    with c2:
+        st.button("Login")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# PURPLE HERO BOX
+st.markdown("""
+<div class="hero-box">
+    <h1>Cravings Delivered.<br>Why Wait?</h1>
+    <p>From food to essentials — get anything delivered to you in minutes. Request now and get it.</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("### 📦 Place Your Request")
+
+with st.form("request_form"):
+    item = st.text_input("What do you want?", placeholder="e.g Pizza, Groceries, Phone Charger")
+    name = st.text_input("Your Full Name", placeholder="John Doe")
+    phone = st.text_input("Your Phone Number", placeholder="0803 123 4567")
+    address = st.text_area("Delivery Address", placeholder="123 Street, Port Harcourt", height=100)
+    
+    submitted = st.form_submit_button("📦 Send Request")
+    
+    if submitted:
+        if not all([item, name, phone, address]):
+            st.error("Please fill all fields")
+        else:
+            subject = f"New Delivery Request - {item}"
+            body = f"""Hi QuantumKicks Team,
+
+I would like to place a request:
+
+Item: {item}
+Name: {name}
+Phone: {phone}
+Delivery Address: {address}
+
+Thank you!"""
+            
+            mailto_link = f"mailto:ebuka2753@gmail.com?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+            
+            st.success("Opening your email app...")
+            st.markdown(f'<a href="{mailto_link}" target="_blank">Click here if email did not open</a>', unsafe_allow_html=True)
+            st.components.v1.html(f'<script>window.location.href = "{mailto_link}";</script>', height=0)
+
+# HOW IT WORKS
+st.markdown("### How It Works")
+st.markdown('<div class="info-card"><b>1. Fill Form</b><br><span style="color:#aaa">Tell us what you need and where to deliver</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="info-card"><b>2. We Confirm</b><br><span style="color:#aaa">We’ll call you with price and delivery time</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="info-card"><b>3. Delivered</b><br><span style="color:#aaa">Get it delivered straight to your door</span></div>', unsafe_allow_html=True)
