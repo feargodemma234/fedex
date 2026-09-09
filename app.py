@@ -9,10 +9,9 @@ st.markdown("""
     .hero-box { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); padding: 50px 24px; border-radius: 0 0 40px 40px; text-align: center; color: white; margin: 0 0 30px 0; }
     .hero-box h1 { font-size: 32px; font-weight: 800; margin: 0 0 12px 0; }
     .hero-box p { font-size: 15px; color: #E0E7FF; margin: 0; }
-    .send-btn { background: #EF4444; color: white; padding: 16px 0; border-radius: 12px; font-size: 18px; font-weight: 700; width: 100%; text-align: center; display: block; text-decoration: none; margin-top: 10px; }
-    .send-btn-disabled { background: #333; color: #666; padding: 16px 0; border-radius: 12px; font-size: 18px; font-weight: 700; width: 100%; text-align: center; display: block; margin-top: 10px; }
+    .send-btn { background: #EF4444; color: white; padding: 16px 0; border-radius: 12px; font-size: 18px; font-weight: 700; width: 100%; text-align: center; display: block; text-decoration: none; margin-top: 10px; border: none; }
+    .send-btn-disabled { background: #444; color: #888; padding: 16px 0; border-radius: 12px; font-size: 18px; font-weight: 700; width: 100%; text-align: center; display: block; margin-top: 10px; }
     .info-card { background: #1a1a1a; padding: 16px; border-radius: 16px; margin-bottom: 12px; }
-    div[data-testid="stTextInput"], div[data-testid="stTextArea"] { margin-bottom: 12px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -29,17 +28,15 @@ st.markdown("""<div class="hero-box"><h1>Cravings Delivered.<br>Why Wait?</h1><p
 
 st.markdown("### 📦 Place Your Request")
 
-# FORM
+# INPUTS - NO FORM WRAPPER
 item = st.text_input("What do you want?", placeholder="e.g Pizza, Groceries, Phone Charger")
 name = st.text_input("Your Full Name", placeholder="John Doe")
 phone = st.text_input("Your Phone Number", placeholder="0803 123 4567")
 address = st.text_area("Delivery Address", placeholder="123 Street, Port Harcourt", height=100)
 
-all_filled = all([item.strip(), name.strip(), phone.strip(), address.strip()])
-
-if all_filled:
-    subject = f"New Delivery Request - {item}"
-    body = f"""Hi QuantumKicks Team,
+# BUILD MAILTO LINK
+subject = f"New Delivery Request - {item if item else 'New Request'}"
+body = f"""Hi QuantumKicks Team,
 
 I would like to place a request:
 
@@ -49,14 +46,15 @@ Phone: {phone}
 Delivery Address: {address}
 
 Thank you!"""
-    mailto_link = f"mailto:ebuka2753@gmail.com?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
-    
-    # BUTTON IS NOW A LINK - TAPS AND OPENS GMAIL
-    st.markdown(f'<a href="{mailto_link}"><div class="send-btn">📦 Send Request</div></a>', unsafe_allow_html=True)
+mailto_link = f"mailto:ebuka2753@gmail.com?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+
+all_filled = all([item.strip(), name.strip(), phone.strip(), address.strip()])
+
+if all_filled:
+    # BUTTON IS A LINK - TAPS AND OPENS GMAIL DIRECTLY
+    st.markdown(f'<a href="{mailto_link}"><button class="send-btn">📦 Send Request</button></a>', unsafe_allow_html=True)
 else:
-    st.markdown('<div class="send-btn-disabled">📦 Send Request</div>', unsafe_allow_html=True)
-    if item or name or phone or address: # only show warning if they started typing
-        st.warning("Please fill all fields")
+    st.markdown('<button class="send-btn-disabled" disabled>📦 Send Request</button>', unsafe_allow_html=True)
 
 # HOW IT WORKS
 st.markdown("### How It Works")
