@@ -66,12 +66,12 @@ address = st.text_area(
 )
 
 # CHECK INPUTS
-all_filled = all([
-    item.strip(),
-    name.strip(),
-    phone.strip(),
-    address.strip()
-])
+all_filled = (
+    item.strip() != ""
+    and name.strip() != ""
+    and phone.strip() != ""
+    and address.strip() != ""
+)
 
 # SEND REQUEST
 if all_filled:
@@ -90,24 +90,62 @@ Delivery Address: {address}
 Thank you!
 """
 
-    encoded_subject = urllib.parse.quote(subject)
-    encoded_body = urllib.parse.quote(body)
+    encoded_subject = urllib.parse.quote(subject, safe="")
+    encoded_body = urllib.parse.quote(body, safe="")
 
-    mailto_link = (
-        "mailto:quantumindustries258@gmail.com"
-        "?subject=" + encoded_subject
-        + "&body=" + encoded_body
+    # Direct Android Gmail intent
+    gmail_link = (
+        "intent://compose?"
+        "to=quantumindustries258@gmail.com"
+        "&subject=" + encoded_subject
+        "&body=" + encoded_body
+        "#Intent;"
+        "scheme=mailto;"
+        "package=com.google.android.gm;"
+        "end"
     )
 
     st.markdown(
-        f'<a href="{mailto_link}" class="send-btn">📦 Send Request</a>',
+        f"""
+        <a href="{gmail_link}"
+           style="
+           display:block;
+           width:100%;
+           box-sizing:border-box;
+           background:#EF4444;
+           color:white;
+           padding:16px 0;
+           border-radius:12px;
+           font-size:18px;
+           font-weight:700;
+           text-align:center;
+           text-decoration:none;
+           margin-top:10px;
+           cursor:pointer;">
+           📦 Send Request
+        </a>
+        """,
         unsafe_allow_html=True
     )
 
 else:
 
     st.markdown(
-        '<div class="send-btn-disabled">📦 Send Request</div>',
+        """
+        <div style="
+            background:#444;
+            color:#888;
+            padding:16px 0;
+            border-radius:12px;
+            font-size:18px;
+            font-weight:700;
+            width:100%;
+            text-align:center;
+            display:block;
+            margin-top:10px;">
+            📦 Send Request
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
